@@ -45,11 +45,11 @@
             // 
             // gridPanel
             // 
-            this.gridPanel.BackColor = System.Drawing.Color.Transparent;
+            this.gridPanel.BackColor = System.Drawing.Color.MidnightBlue;
             this.gridPanel.Controls.Add(this.squaresPanel);
             this.gridPanel.Location = new System.Drawing.Point(12, 12);
             this.gridPanel.Name = "gridPanel";
-            this.gridPanel.Size = new System.Drawing.Size(572, 575);
+            this.gridPanel.Size = new System.Drawing.Size(572, 572);
             this.gridPanel.TabIndex = 0;
             this.gridPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.gridPanel_Paint);
             // 

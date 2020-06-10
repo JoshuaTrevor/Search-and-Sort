@@ -85,7 +85,7 @@ namespace MaterialUIDemo
             timer1.Start();
             if(algoThread != null)
                 algoThread.Abort();
-            algoThread = new Thread(s.bubbleSort);
+            algoThread = startAlgo();
             algoThread.IsBackground = true;
             algoThread.Start();
             //Valid squares are between 0,0 and 56, 56
@@ -120,6 +120,23 @@ namespace MaterialUIDemo
         private void timerTrackBar_Scroll(object sender, EventArgs e)
         {
             s.waitTime = (92 - timerTrackBar.Value * 9);
+        }
+
+        //Modify this later to have two halves for pathfinding and sorting
+        private Thread startAlgo()
+        {
+            switch (algorithmSelectorBox.Text)
+            {
+				case "Bubble":
+                    return new Thread(s.bubbleSort);
+                case "Selection":
+                    return new Thread(s.selectionSort);
+                case "Merge":
+                    return new Thread(s.mergeSort);
+
+            }
+            Console.WriteLine("Error");
+            return new Thread(s.selectionSort);
         }
 
         private void algorithmSelectorBox_SelectedIndexChanged(object sender, EventArgs e)
