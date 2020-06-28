@@ -99,6 +99,7 @@
             this.sortCheckBox.TabIndex = 2;
             this.sortCheckBox.Text = "Sort";
             this.sortCheckBox.UseVisualStyleBackColor = true;
+            this.sortCheckBox.CheckedChanged += new System.EventHandler(this.sortCheckBox_CheckedChanged);
             // 
             // searchCheckBox
             // 
@@ -115,6 +116,7 @@
             this.searchCheckBox.TabIndex = 3;
             this.searchCheckBox.Text = "Search";
             this.searchCheckBox.UseVisualStyleBackColor = true;
+            this.searchCheckBox.CheckedChanged += new System.EventHandler(this.searchCheckBox_CheckedChanged);
             // 
             // timerTrackBar
             // 
@@ -167,7 +169,6 @@
             this.algorithmSelectorBox.FormattingEnabled = true;
             this.algorithmSelectorBox.Items.AddRange(new object[] {
             "Bubble",
-            "Heap",
             "Selection",
             "Merge",
             "Quick"});

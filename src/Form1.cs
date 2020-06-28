@@ -36,6 +36,7 @@ namespace MaterialUIDemo
             //Judge context later
             s.Init(squareLength);
             s.waitTime = (92 - timerTrackBar.Value * 9);
+            timer1.Start();
             algorithmSelectorBox.SelectedItem = "Bubble";
         }
 
@@ -81,10 +82,16 @@ namespace MaterialUIDemo
                 GlobalConfig.auto = !GlobalConfig.auto;
                 return;
             }
-            s.Init(squareLength);
-            timer1.Start();
-            if(algoThread != null)
+            if(sortCheckBox.Checked && s.sorted)
+            {
+                s.Init(squareLength);
+                return;
+            }
+            if (algoThread != null)
+            {
                 algoThread.Abort();
+                s.Init(squareLength);
+            }
             algoThread = startAlgo();
             algoThread.IsBackground = true;
             algoThread.Start();
@@ -109,8 +116,17 @@ namespace MaterialUIDemo
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            if(s.refreshSemaphore)
-                drawCoords = new List<(int, int, Color)>(s.colourInCoords);
+            if (sortCheckBox.Checked)
+            {
+                if (s.refreshSemaphore)
+                    drawCoords = new List<(int, int, Color)>(s.colourInCoords);
+                if (sortCheckBox.Checked)
+                    goButton.Text = s.sorted ? "Shuffle" : "Go!";
+            }
+            else
+            {
+                drawCoords = new List<(int, int, Color)>();
+            }
             squaresPanel.Refresh();
             gridPanel.Refresh();
             goButton.BackColor = Color.Green;
@@ -125,15 +141,28 @@ namespace MaterialUIDemo
         //Modify this later to have two halves for pathfinding and sorting
         private Thread startAlgo()
         {
-            switch (algorithmSelectorBox.Text)
+            if (sortCheckBox.Checked)
             {
-				case "Bubble":
-                    return new Thread(s.bubbleSort);
-                case "Selection":
-                    return new Thread(s.selectionSort);
-                case "Merge":
-                    return new Thread(s.mergeSort);
-
+                
+                switch (algorithmSelectorBox.Text)
+                {
+                    case "Bubble":
+                        return new Thread(s.bubbleSort);
+                    case "Selection":
+                        return new Thread(s.selectionSort);
+                    case "Merge":
+                        return new Thread(s.mergeSort);
+                    case "Quick":
+                        return new Thread(s.quickSort);
+                }
+            }
+            else
+            {
+                switch (algorithmSelectorBox.Text)
+                {
+                    case "Djikstra":
+                        return new Thread(s.bubbleSort);
+                }
             }
             Console.WriteLine("Error");
             return new Thread(s.selectionSort);
@@ -142,6 +171,38 @@ namespace MaterialUIDemo
         private void algorithmSelectorBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             
+        }
+
+        private void setAlgoDropdown(string[] items)
+        {
+            algorithmSelectorBox.Items.Clear();
+            foreach(string item in items)
+            {
+                algorithmSelectorBox.Items.Add(item);
+            }
+            algorithmSelectorBox.Text = (string)algorithmSelectorBox.Items[0];
+        }
+
+        private void searchCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!searchCheckBox.Checked)
+                return;
+            sortCheckBox.Checked = false;
+            if (algoThread != null)
+                algoThread.Abort();
+            //pf.Init(squareLength);
+            setAlgoDropdown(new string[] {"Djikstra", "A*"});
+        }
+
+        private void sortCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!sortCheckBox.Checked)
+                return;
+            searchCheckBox.Checked = false;
+            if (algoThread != null)
+                algoThread.Abort();
+            s.Init(squareLength);
+            setAlgoDropdown(new string[] {"Bubble", "Selection", "Merge", "Quick"});
         }
     }
 }

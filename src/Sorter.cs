@@ -15,21 +15,24 @@ namespace MaterialUIDemo
         int[] list;
         public bool refreshSemaphore;
         public int waitTime = 10;
-        List<int> greenCols = new List<int>();
+        SortedSet<int> greenCols = new SortedSet<int>();
         public List<(int, int, Color)> colourInCoords = new List<(int, int, Color)>();
+        public bool sorted = false;
         public void Init(int squareLength)
         {
+            sorted = false;
             list = new int[squareLength];
             Random r = new Random();
-            for(int i = 0; i < list.Length; i++)
+            greenCols.Clear();
+            for (int i = 0; i < list.Length; i++)
             {
                 list[i] = r.Next(1+squareLength/6, squareLength-squareLength/4);
             }
-            setColouredSquares(new int[0] { }, new int[0] { }, new List<int>());
+            setColouredSquares(new int[0] { }, new int[0] { });
         }
 
 
-        public void setColouredSquares(int[] targets, int[] pointers, List<int> greenColumns)
+        public void setColouredSquares(int[] targets, int[] pointers)
         {
             refreshSemaphore = false;
             colourInCoords.Clear();
@@ -43,24 +46,20 @@ namespace MaterialUIDemo
                     else if (targets.Contains<int>(i))
                         c = Color.LightGreen;
                     
-                    else if (greenColumns.Contains<int>(i))
+                    else if (greenCols.Contains<int>(i))
                         c = Color.PaleVioletRed;
-                    if (j > 10000)
-                    {
-                        Console.WriteLine(list[i]);
-                        return;
-                    }
                     colourInCoords.Add((i, list.Length - j - 1, c));
                 }
             }
             refreshSemaphore = true;
         }
 
-
+        ////
+        // Bubble sort
+        ////
         public void bubbleSort()
         {
             int n = list.Length;
-            greenCols.Clear();
             for (int i = 0; i < n - 1; i++)
             {
                 for (int j = 0; j < n - i - 1; j++)
@@ -74,21 +73,23 @@ namespace MaterialUIDemo
                         list[j + 1] = temp;
 
                     }
-                    setColouredSquares(new int[2] { j, j + 1 }, new int[0] { }, greenCols);
+                    setColouredSquares(new int[2] { j, j + 1 }, new int[0] { });
                 }
                 greenCols.Add(list.Length - i - 1);
 
             }
             greenCols.Add(0);
             greenCols.Add(1);
-            setColouredSquares(new int[0] { }, new int[0] { }, greenCols);
+            setColouredSquares(new int[0] { }, new int[0] { });
+            sorted = true;
         }
 
-
+        ////
+        // Selection sort
+        ////
         public void selectionSort()
         {
             int n = list.Length;
-            greenCols.Clear();
             int smallestNumber;
             int smallestNumberIndex = -1;
             for (int i = 0; i < n; i++)
@@ -102,13 +103,13 @@ namespace MaterialUIDemo
                         smallestNumber = list[j];
                         smallestNumberIndex = j;
                     }
-                    setColouredSquares(new int[1] { j }, new int[1] { smallestNumberIndex }, greenCols);
+                    setColouredSquares(new int[1] { j }, new int[1] { smallestNumberIndex });
                 }
                 //Move the value to the right hand side of the green columns
                 int temp = list[i];
                 if (smallestNumber == int.MaxValue)
                 {
-                    setColouredSquares(new int[0] { }, new int[0] { }, greenCols);
+                    setColouredSquares(new int[0] { }, new int[0] { });
                     return;
                 }
                 list[i] = smallestNumber;
@@ -123,22 +124,23 @@ namespace MaterialUIDemo
                     list[i + 1] = temp;
                 
                 greenCols.Add(i);
-                setColouredSquares(new int[0] { }, new int[0] { }, greenCols);
+                setColouredSquares(new int[0] { }, new int[0] { });
             }
+            sorted = true;
         }
 
-
+        ////
+        // Merge sort
+        ////
         public void mergeSort()
         {
             hasRun = false;
-            greenCols.Clear(); // move this to init and take out of these
             mergeSort(list, 0, list.Length - 1);
-            setColouredSquares(new int[] { }, new int[] { }, greenCols);
+            setColouredSquares(new int[] { }, new int[] { });
+            sorted = true;
         }
 
         bool hasRun = false;
-        /* l is for left index and r is right index of the 
-           sub-array of arr to be sorted */
         void mergeSort(int[] arr, int l, int r)
         {
             bool first = false;
@@ -146,48 +148,44 @@ namespace MaterialUIDemo
             {
                 first = true;
                 hasRun = true;
-                Console.WriteLine("called");
             }
             if (l < r)
             {
-                // Same as (l+r)/2, but avoids overflow for 
-                // large l and h 
                 int m = l + (r - l) / 2;
 
-                // Sort first and second halves 
                 mergeSort(arr, l, m);
                 mergeSort(arr, m + 1, r);
 
                 Thread.Sleep(waitTime);
-                setColouredSquares(new int[] { }, new int[] { }, greenCols);
-                Console.WriteLine(first);
+                setColouredSquares(new int[] { }, new int[] { });
                 merge(arr, l, m, r, first);
-                
             }
         }
 
+        // Merge two sorted lists
         void merge(int[] arr, int l, int m, int r, bool first)
         {
-            Thread.Sleep(waitTime);
             int i, j, k;
-            int n1 = m - l + 1;
-            int n2 = r - m;
+            int l1 = m - l + 1;
+            int r1 = r - m;
 
-            /* create temp arrays */
-            int[] L = new int[n1];
-            int[] R = new int[n2];
+            int[] L = new int[l1];
+            int[] R = new int[r1];
 
-            /* Copy data to temp arrays L[] and R[] */
-            for (i = 0; i < n1; i++)
+            //Copy into temporary arrays
+            for (i = 0; i < l1; i++)
+            {
                 L[i] = arr[l + i];
-            for (j = 0; j < n2; j++)
-                R[j] = arr[m + 1 + j];
+            }
 
-            /* Merge the temp arrays back into arr[l..r]*/
-            i = 0; // Initial index of first subarray 
-            j = 0; // Initial index of second subarray 
-            k = l; // Initial index of merged subarray 
-            while (i < n1 && j < n2)
+            for (j = 0; j < r1; j++)
+            {
+                R[j] = arr[m + 1 + j];
+            }
+
+            i = j = 0;
+            k = l;
+            while (i < l1 && j < r1)
             {
                 if (L[i] <= R[j])
                 {
@@ -200,43 +198,104 @@ namespace MaterialUIDemo
                     j++;
                 }
                 k++;
-                if(first)
-                {
-                    greenCols.Add(k-1);
-                }
-                Thread.Sleep(waitTime);
-                setColouredSquares(new int[] { }, new int[] { i + l, j + m }, greenCols);
+                setupDrawingForMerge(i, j, k, l, m, first);
             }
 
-            /* Copy the remaining elements of L[], if there 
-               are any */
-            while (i < n1)
+            //Copy leftovers
+            while (i < l1)
             {
                 arr[k] = L[i];
                 i++;
                 k++;
-                if (first)
-                {
-                    Thread.Sleep(waitTime);
-                    greenCols.Add(k - 1);
-                    setColouredSquares(new int[] { }, new int[] { i + l, j + m }, greenCols);
-                }
+                setupDrawingForMerge(i, j, k, l, m, first);
             }
 
-            /* Copy the remaining elements of R[], if there 
-               are any */
-            while (j < n2)
+            while (j < r1)
             {
                 arr[k] = R[j];
                 j++;
                 k++;
-                if (first)
-                {
-                    Thread.Sleep(waitTime);
-                    greenCols.Add(k - 1);
-                    setColouredSquares(new int[] { }, new int[] { i + l, j + m }, greenCols);
-                }
+                setupDrawingForMerge(i, j, k, l, m, first);
             }
+        }
+
+        public void setupDrawingForMerge(int i, int j, int k, int l, int m, bool first)
+        {
+            if (first)
+                greenCols.Add(k - 1);
+            Thread.Sleep(waitTime);
+            setColouredSquares(new int[] { i + l, j + m }, new int[] { });
+        }
+
+        ////
+        // Quick sort
+        ////
+        public void quickSort()
+        {
+            hasRun = false;
+            quickSort(list, 0, list.Length - 1);
+            setColouredSquares(new int[] { }, new int[] { });
+            sorted = true;
+        }
+
+        private int Partition(int[] arr, int start, int end)
+        {
+            int key = arr[end];
+            int i = start - 1;
+            for (int j = start; j < end; j++)
+            {
+                int z = 1;
+                //Anything prior to a number which is definitely sorted must also be sorted since the sort works left>right
+                //This doesn't perfectly represent the order in which numbers are processed but is close enough to be visually clean
+                while (!greenCols.Contains<int>(start - z) && start - z > -1)
+                {
+                    greenCols.Add(start - z);
+                    z++;
+                }
+                if (arr[j] <= key)
+                {
+                    Swap(ref arr[++i], ref arr[j]);
+                }
+                Thread.Sleep(waitTime);
+                setColouredSquares(new int[] {j}, new int[] {end, start});
+                
+            }
+            Swap(ref arr[i++], ref arr[end]);
+            Thread.Sleep(waitTime);
+            setColouredSquares(new int[] { }, new int[] { end, start });
+            return i;
+        }
+
+        public void Swap<T>(ref T lhs, ref T rhs)
+        {
+            T temp = lhs;
+            lhs = rhs;
+            rhs = temp;
+        }
+
+        public void quickSort(int[] arr, int start, int end)
+        {
+            if (start < end)
+            {
+                int key = Partition(arr, start, end);
+                quickSort(arr, start, key - 1);
+                quickSort(arr, key + 1, end);
+            } 
+            else
+            {
+                //These two numbers, at least, must be sorted
+                greenCols.Add(start);
+                greenCols.Add(end);
+                int i = 1;
+                //Anything prior to a number which is definitely sorted must also be sorted since the sort works left>right
+                //This doesn't perfectly represent the order in which numbers are processed but is close enough to be visually clean
+                while (!greenCols.Contains<int>(start - i) && start - i > -1)
+                {
+                    greenCols.Add(start - i);
+                    i++;
+                }
+                setColouredSquares(new int[] { }, new int[] { end, start });
+            }    
         }
     }
 }
