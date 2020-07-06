@@ -232,7 +232,6 @@ namespace MaterialUIDemo
         ////
         public void quickSort()
         {
-            hasRun = false;
             quickSort(list, 0, list.Length - 1);
             setColouredSquares(new int[] { }, new int[] { });
             sorted = true;
@@ -254,13 +253,15 @@ namespace MaterialUIDemo
                 }
                 if (arr[j] <= key)
                 {
-                    Swap(ref arr[++i], ref arr[j]);
+                    i++;
+                    Swap(ref arr[i], ref arr[j]);
                 }
                 Thread.Sleep(waitTime);
                 setColouredSquares(new int[] {j}, new int[] {end, start});
                 
             }
-            Swap(ref arr[i++], ref arr[end]);
+            i++;
+            Swap(ref arr[i], ref arr[end]);
             Thread.Sleep(waitTime);
             setColouredSquares(new int[] { }, new int[] { end, start });
             return i;
